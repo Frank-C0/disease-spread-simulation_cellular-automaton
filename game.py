@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_f
 from cellular_automaton_interface import CellularAutomaton
-from game_of_life_example import GameOfLifeAutomatonOpenCL
+from TIF.example_3_states_cellular_automaton import GameOfLifeAutomatonOpenCL
 import numpy as np
 
 class CellularAutomatePygame:

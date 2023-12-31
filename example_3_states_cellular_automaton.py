@@ -2,6 +2,7 @@ from cellular_automaton_interface import CellularAutomaton
 from cellular_automaton_gif import CellularAutomatonGif
 from cellular_automaton_opencL import CellularAutomatonOpenCL
 from cellular_automaton_python import CellularAutomatonPython
+from stochastic_memorized_cellular_automaton_opencl import StochasticCellularAutomatonOpenCLMemory
 
 
 class GameOfLifeAutomatonOpenCL(CellularAutomatonOpenCL):
