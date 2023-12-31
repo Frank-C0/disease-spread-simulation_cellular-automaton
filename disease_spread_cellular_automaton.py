@@ -7,20 +7,38 @@ import numpy as np
 
 
 class IllAutomate(StochasticCellularAutomatonOpenCLMemory):
-    def __init__(self, size=100, initial_state=None):
+    def __init__(self, size=100, initial_state=None, R0=1.5, ILL_DURATION=14):
+        self.R0 = R0
+        self.ILL_DURATION = ILL_DURATION
         super().__init__(
             size,
             4,
-            rule_kernel=IllAutomate.kernel,
+            rule_kernel=self.kernel_code(),
             initial_state=initial_state,
+            initializer_func=IllAutomate.initializer
         )
 
-    kernel = """
-        #define R0 2.4
-        #define START_ILL 0.001
-        #define ILL_DURATION 14
+    def initializer(grid, memory_grid):
+        # Configura la memoria según el estado inicial
+        for i in range(grid.shape[0]):
+            for j in range(grid.shape[1]):
+                cell_state = grid[i, j]
+                if cell_state == 1:  # Estado para células enfermas
+                    memory_grid[i, j]['state'][0] = 1
+                elif cell_state == 2:  # Estado para células que estuvieron enfermas
+                    memory_grid[i, j]['state'][1] = 1
+                elif cell_state == 3:  # Estado para células inmunes
+                    memory_grid[i, j]['state'][2] = 1
+                # else: Estado para células saludables (no es necesario configurar bools[3] ya que es 0 por defecto)
+        return memory_grid
+
+    def kernel_code(self):
+        return f"""
+        #define R0 {self.R0}
+        #define ILL_DURATION {self.ILL_DURATION}
         #define PC ((R0/ILL_DURATION)/8)
 
+        """+"""
         typedef struct {
             uchar timesIll;
             uchar state[4];

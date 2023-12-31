@@ -1,7 +1,8 @@
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_f
+from disease_spread_cellular_automaton import IllAutomate
 from cellular_automaton_interface import CellularAutomaton
-from TIF.example_3_states_cellular_automaton import GameOfLifeAutomatonOpenCL
+from example_3_states_cellular_automaton import GameOfLifeAutomatonOpenCL
 import numpy as np
 
 class CellularAutomatePygame:
@@ -10,7 +11,14 @@ class CellularAutomatePygame:
         self.size = automaton.SIZE
         self.screen_size = initial_screen_size
         self.cell_size = self.screen_size // self.size
-        self.colors = colors or [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)]
+        self.colors = colors or [
+                (0, 255, 0), 
+                (255, 0, 0), 
+                (0, 255, 255), 
+                (0, 0, 255),
+                (255,0,255),
+                (255,255,0),
+                (100,100,0)]
         
         pygame.init()
         self.screen = pygame.display.set_mode((self.screen_size, self.screen_size), pygame.RESIZABLE)
@@ -62,8 +70,12 @@ class CellularAutomatePygame:
         pygame.quit()
 
 if __name__ == "__main__":
-    game_of_life_automaton = GameOfLifeAutomatonOpenCL(
-        initial_state=CellularAutomaton.load_image("R:\\Labs\\FC-Lab1\\TIF\\input_3states.bmp", num_states=3),
+    game_of_life_automaton = IllAutomate(
+        initial_state=CellularAutomaton.load_image(
+            "R:\\Labs\\FC-Lab1\\TIF\\initial_desired_centra.bmp", num_states=4
+        ),
+        R0=2.4,
+        ILL_DURATION=16
     )
     
     game_pygame = CellularAutomatePygame(automaton=game_of_life_automaton, initial_screen_size=600)

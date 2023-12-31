@@ -8,7 +8,7 @@ NUM_BOOLS = 4
 
 
 class StochasticCellularAutomatonOpenCLMemory(CellularAutomaton):
-    def __init__(self, size=100, num_states=2, rule_kernel=None, initial_state=None):
+    def __init__(self, size=100, num_states=2, rule_kernel=None, initial_state=None, initializer_func=None):
         super().__init__(size, num_states, initial_state)
         print(self.SIZE)
 
@@ -32,33 +32,18 @@ class StochasticCellularAutomatonOpenCLMemory(CellularAutomaton):
             hostbuf=self.grid,
         )
 
-
-        initial_memory = np.zeros_like(self.grid, dtype=dtype)
-        # Configura la memoria según el estado inicial
-        for i in range(self.SIZE):
-            for j in range(self.SIZE):
-                cell_state = self.grid[i, j]
-                if cell_state == 1:  # Estado para células enfermas
-                    initial_memory[i, j]['state'][0] = 1
-                elif cell_state == 2:  # Estado para células que estuvieron enfermas
-                    initial_memory[i, j]['state'][1] = 1
-                elif cell_state == 3:  # Estado para células inmunes
-                    initial_memory[i, j]['state'][2] = 1
-                # else: Estado para células saludables (no es necesario configurar bools[3] ya que es 0 por defecto)
-
+        if initializer_func is None:
+            initial_memory = np.zeros_like(self.grid, dtype=dtype)
+        else:
+            initial_memory = initializer_func(self.grid, np.zeros_like(self.grid, dtype=dtype))
+            
+        
         self.MEMORY1 = cl.Buffer(
             self.ctx,
             cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=initial_memory,
         )
 
-
-
-        # self.MEMORY1 = cl.Buffer(
-        #     self.ctx,
-        #     cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
-        #     hostbuf=np.zeros_like(self.grid, dtype=dtype),
-        # )
 
         self.GRID2 = cl.Buffer(
             self.ctx, 
