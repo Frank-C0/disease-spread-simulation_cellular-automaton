@@ -2,8 +2,8 @@ from cellular_automaton_gif import CellularAutomatonGif
 from cellular_automaton_interface import CellularAutomaton
 from disease_spread_cellular_automaton import IllAutomaton
 
-R0 = 3.8
-ILL_DURATION = 16
+R0 = 2.4
+ILL_DURATION = 25
 FRAMES=2000
 if __name__ == "__main__":
     automaton = IllAutomaton(
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     )
 
     gif_generator = CellularAutomatonGif(
-        max_frames=500,
+        max_frames=2000,
         save_interval=10,
         output_folder="output_gifs/",
         automaton=automaton,
