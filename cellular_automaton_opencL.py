@@ -5,8 +5,8 @@ import time
 
 
 class CellularAutomatonOpenCL(CellularAutomaton):
-    def __init__(self, size=100, rule_kernel=None, initial_state=None):
-        super().__init__(size, initial_state)
+    def __init__(self, size=100, num_states=2, rule_kernel=None, initial_state=None):
+        super().__init__(size, num_states, initial_state)
 
         self.platform = cl.get_platforms()[0]
         self.device = self.platform.get_devices()[0]
@@ -17,7 +17,6 @@ class CellularAutomatonOpenCL(CellularAutomaton):
 
         self.prg = cl.Program(self.ctx, self.kernel_code).build()
 
-        print(self.grid)
         self.GRID1 = cl.Buffer(
             self.ctx,
             cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
@@ -28,8 +27,6 @@ class CellularAutomatonOpenCL(CellularAutomaton):
         self.ACTIVE_GRID = 1
 
     def update(self):
-        # t_start = time.time()
-
         if self.ACTIVE_GRID == 1:
             self.prg.gol(
                 self.queue,
@@ -38,6 +35,7 @@ class CellularAutomatonOpenCL(CellularAutomaton):
                 self.GRID1,
                 self.GRID2,
                 np.uint32(self.SIZE),
+                np.uint32(self.NUM_STATES),
             )
             self.ACTIVE_GRID = 2
             cl.enqueue_copy(self.queue, self.grid, self.GRID1)
@@ -49,10 +47,9 @@ class CellularAutomatonOpenCL(CellularAutomaton):
                 self.GRID2,
                 self.GRID1,
                 np.uint32(self.SIZE),
+                np.uint32(self.NUM_STATES),
             )
             self.ACTIVE_GRID = 1
-            img_data = np.empty((self.SIZE, self.SIZE), dtype=np.int32)
             cl.enqueue_copy(self.queue, self.grid, self.GRID2)
         self.queue.finish()
-
         # print(f"\tcomputed in {(time.time() - t_start) * 1000:.2f}ms ({(1/ (time.time() - t_start)):.2f} fps)", flush=False,)

@@ -14,13 +14,17 @@ class CellularAutomatePygame:
 
         self.fullscreen = False
         self.cell_changed = np.zeros((self.size, self.size), dtype=bool)
-        self.white_surface = pygame.Surface((self.cell_size, self.cell_size))
-        self.white_surface.fill((255, 255, 255))
-        self.black_surface = pygame.Surface((self.cell_size, self.cell_size))
-        self.black_surface.fill((0, 0, 0))
-
+        self.color_surfaces = [pygame.Surface((self.cell_size, self.cell_size)) for _ in range(automaton.NUM_STATES)]
+        self.set_color_surfaces()
+        
         self.offset_x = 0
         self.offset_y = 0
+
+    def set_color_surfaces(self):
+        # Asignar colores a las superficies según el número de estados
+        colors = [(255, 255, 255), (255, 0, 0), (0, 255, 0), (0, 0, 255)]  # Puedes personalizar los colores
+        for i, surface in enumerate(self.color_surfaces):
+            surface.fill(colors[i])
 
     def draw_grid(self, data):
         self.screen.fill((255, 255, 255))  # Llenar la pantalla con blanco
@@ -34,11 +38,11 @@ class CellularAutomatePygame:
                 pixel_y = (y * cell_size_y) - int(self.offset_y * cell_size_y)
 
                 if 0 <= pixel_x < self.screen_size and 0 <= pixel_y < self.screen_size:
-                    if data[y, x] or self.cell_changed[y, x]:
-                        surface = self.black_surface if data[y, x] else self.white_surface
-                        scaled_surface = pygame.transform.scale(surface, (cell_size_x, cell_size_y))
-                        rect = scaled_surface.get_rect(topleft=(pixel_x, pixel_y))
-                        self.screen.blit(scaled_surface, rect.topleft)
+                    state = data[y, x]
+                    surface = self.color_surfaces[state]
+                    scaled_surface = pygame.transform.scale(surface, (cell_size_x, cell_size_y))
+                    rect = scaled_surface.get_rect(topleft=(pixel_x, pixel_y))
+                    self.screen.blit(scaled_surface, rect.topleft)
 
         self.cell_changed[:] = False
 
@@ -79,7 +83,7 @@ class CellularAutomatePygame:
 
 if __name__ == "__main__":
     # Choose either GameOfLifeAutomatonPython or GameOfLifeAutomatonOpenCL
-    game_of_life_automaton = GameOfLifeAutomatonOpenCL(size=600)
+    game_of_life_automaton = GameOfLifeAutomatonOpenCL(size=200, num_states=3)
     
     game_pygame = CellularAutomatePygame(automaton=game_of_life_automaton, initial_screen_size=600)
     game_pygame.run()
