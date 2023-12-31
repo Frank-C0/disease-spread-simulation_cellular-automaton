@@ -32,7 +32,7 @@ class GifSaver:
         if os.path.exists(final_filename):
             all_gifs.append(final_filename)
 
-        print(all_gifs)
+        # print(all_gifs)
         with imageio.get_writer(combined_filename, fps=10, palettesize=2) as writer:
             for gif_file in all_gifs:
                 frames_to_add = imageio.mimread(gif_file)

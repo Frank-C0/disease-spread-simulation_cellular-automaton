@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_f
-from game_of_life import GameOfLifeAutomaton
+from TIF.game_of_life_example import GameOfLifeAutomatonPython
 
 class CellularAutomatePygame:
     def __init__(self, automaton, initial_screen_size):
@@ -58,8 +58,9 @@ class CellularAutomatePygame:
         pygame.quit()
 
 if __name__ == "__main__":
-    Create an instance of GameOfLifeCalculator or any other cellular automaton
+    # Create an instance of GameOfLifeCalculator or any other cellular automaton
     # game_of_life_calculator = GameOfLifeAutomaton(size=50)
+    game_of_life = CellularAutomatonOpenCL(size=100, rule_kernel=game_of_life_kernel)
     
     # Use the GameOfLifePygame class with the chosen automaton
     game_pygame = CellularAutomatePygame(automaton=game_of_life_calculator, initial_screen_size=500)

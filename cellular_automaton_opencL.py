@@ -54,13 +54,7 @@ class CellularAutomatonOpenCL(CellularAutomaton):
             cl.enqueue_copy(self.queue, self.grid, self.GRID2)
         self.queue.finish()
 
-        print(
-            f"\tcomputed in {(time.time() - t_start) * 1000:.2f}ms ({(1/ (time.time() - t_start)):.2f} fps)",
-            flush=False,
-        )
-        print(
-            f"total gpu time: {(time.time() - t_start) * 1000:.2f}ms ({(1/ (time.time() - t_start)):.2f} fps)\n"
-        )
+        print(f"\tcomputed in {(time.time() - t_start) * 1000:.2f}ms ({(1/ (time.time() - t_start)):.2f} fps)", flush=False,)
 
         # img = Image.fromarray(img_data.astype('uint8') * 255)
         # img = img.convert('L')
