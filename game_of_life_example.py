@@ -1,3 +1,4 @@
+from cellular_automaton_interface import CellularAutomaton
 from cellular_automaton_gif import CellularAutomatonGif
 from cellular_automaton_opencL import CellularAutomatonOpenCL
 from cellular_automaton_python import CellularAutomatonPython
@@ -26,14 +27,14 @@ class GameOfLifeAutomatonOpenCL(CellularAutomatonOpenCL):
         }
 
     """
-    def __init__(self, size):
-        super().__init__(size, rule_kernel=GameOfLifeAutomatonOpenCL.game_of_life_kernel)
+    def __init__(self, size=100, initial_state=None):
+        super().__init__(size, rule_kernel=GameOfLifeAutomatonOpenCL.game_of_life_kernel, initial_state=initial_state)
 
     
 
 class GameOfLifeAutomatonPython(CellularAutomatonPython):
-    def __init__(self, size):
-        super().__init__(size, rule=self.game_of_life_rule)
+    def __init__(self, size=100, initial_state=None):
+        super().__init__(size, rule=self.game_of_life_rule, initial_state=initial_state)
 
     def game_of_life_rule(self, x, y):
         n = self.SIZE
@@ -56,24 +57,25 @@ class GameOfLifeAutomatonPython(CellularAutomatonPython):
 
 
 if __name__ == "__main__":
-    game_of_life = GameOfLifeAutomatonPython(100)
-    game = CellularAutomatonGif(
-        max_frames=100,
-        save_interval=10,
-        output_folder="output_gifs/",
-        automaton=game_of_life,
-        filename_gif="python_gif.gif"
-    )
-    game.generate_frames()
-    game.combine_gifs()
+    # game_of_life = GameOfLifeAutomatonPython(100)
+    # game = CellularAutomatonGif(
+    #     max_frames=100,
+    #     save_interval=10,
+    #     output_folder="output_gifs/",
+    #     automaton=game_of_life,
+    #     filename_gif="python_gif.gif"
+    # )
+    # game.generate_frames()
+    # game.combine_gifs()
 
-    game_of_life = GameOfLifeAutomatonOpenCL(size=100)
-    game = CellularAutomatonGif(
+    # game_of_life = GameOfLifeAutomatonOpenCL(size=100)
+    game_of_life = GameOfLifeAutomatonOpenCL(initial_state=CellularAutomaton.load_image('R:\Labs\FC-Lab1\TIF\input.bmp'))
+    gif_generator = CellularAutomatonGif(
         max_frames=100,
         save_interval=10,
         output_folder="output_gifs/",
         automaton=game_of_life,
         filename_gif="opencl_gif.gif"
     )
-    game.generate_frames()
-    game.combine_gifs()
+    gif_generator.generate_frames()
+    gif_generator.combine_gifs()

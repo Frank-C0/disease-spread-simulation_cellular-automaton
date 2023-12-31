@@ -5,7 +5,7 @@ import time
 
 
 class CellularAutomatonOpenCL(CellularAutomaton):
-    def __init__(self, size, rule_kernel, initial_state=None):
+    def __init__(self, size=100, rule_kernel=None, initial_state=None):
         super().__init__(size, initial_state)
 
         self.platform = cl.get_platforms()[0]
@@ -17,6 +17,7 @@ class CellularAutomatonOpenCL(CellularAutomaton):
 
         self.prg = cl.Program(self.ctx, self.kernel_code).build()
 
+        print(self.grid)
         self.GRID1 = cl.Buffer(
             self.ctx,
             cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
@@ -27,7 +28,7 @@ class CellularAutomatonOpenCL(CellularAutomaton):
         self.ACTIVE_GRID = 1
 
     def update(self):
-        t_start = time.time()
+        # t_start = time.time()
 
         if self.ACTIVE_GRID == 1:
             self.prg.gol(
@@ -54,9 +55,4 @@ class CellularAutomatonOpenCL(CellularAutomaton):
             cl.enqueue_copy(self.queue, self.grid, self.GRID2)
         self.queue.finish()
 
-        print(f"\tcomputed in {(time.time() - t_start) * 1000:.2f}ms ({(1/ (time.time() - t_start)):.2f} fps)", flush=False,)
-
-        # img = Image.fromarray(img_data.astype('uint8') * 255)
-        # img = img.convert('L')
-
-        # return img_data
+        # print(f"\tcomputed in {(time.time() - t_start) * 1000:.2f}ms ({(1/ (time.time() - t_start)):.2f} fps)", flush=False,)

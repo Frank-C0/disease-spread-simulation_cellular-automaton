@@ -3,8 +3,8 @@ import numpy as np
 
 
 class CellularAutomatonPython(CellularAutomaton):
-    def __init__(self, size, rule):
-        super().__init__(size)
+    def __init__(self, size=100, rule=None, initial_state=None):
+        super().__init__(size, initial_state)
         self.rule = rule
         self.grid = np.random.choice((False, True), (self.SIZE, self.SIZE)).astype(
             np.int32
