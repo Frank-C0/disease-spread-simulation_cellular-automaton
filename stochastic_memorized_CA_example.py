@@ -2,12 +2,12 @@ from cellular_automaton_interface import CellularAutomaton
 from stochastic_memorized_cellular_automaton_opencl import StochasticCellularAutomatonOpenCLMemory
 from cellular_automaton_gif import CellularAutomatonGif
 
-class Automate(StochasticCellularAutomatonOpenCLMemory):
+class RandomRulesCA(StochasticCellularAutomatonOpenCLMemory):
     def __init__(self, size=100, initial_state=None):
         super().__init__(
             size,
             2, 
-            rule_kernel=Automate.kernel,
+            rule_kernel=RandomRulesCA.kernel,
             initial_state=initial_state,
         )
 
@@ -78,27 +78,3 @@ class Automate(StochasticCellularAutomatonOpenCLMemory):
         }
 
     """
-
-
-if __name__ == "__main__":
-    automaton = Automate(
-        # initial_state=CellularAutomaton.load_image(
-        #     "R:\\Labs\\FC-Lab1\\TIF\\input_3states.bmp", num_states=2
-        # ),
-    )
-    gif_generator = CellularAutomatonGif(
-        max_frames=50,
-        save_interval=10,
-        output_folder="output_gifs/",
-        automaton=automaton,
-        filename_gif="opencl_memory_gif.gif",
-        frame_rate=10.0,
-        num_states=2,
-        colors=[
-            (0,255,0),
-            (0,0,255),
-            (255,0,0)
-        ]
-    )
-    gif_generator.generate_frames()
-    gif_generator.combine_gifs()

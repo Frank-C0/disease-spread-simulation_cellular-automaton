@@ -6,7 +6,7 @@ from cellular_automaton_gif import CellularAutomatonGif
 import numpy as np
 
 
-class IllAutomate(StochasticCellularAutomatonOpenCLMemory):
+class IllAutomaton(StochasticCellularAutomatonOpenCLMemory):
     def __init__(self, size=100, initial_state=None, R0=1.5, ILL_DURATION=14):
         self.R0 = R0
         self.ILL_DURATION = ILL_DURATION
@@ -15,7 +15,7 @@ class IllAutomate(StochasticCellularAutomatonOpenCLMemory):
             4,
             rule_kernel=self.kernel_code(),
             initial_state=initial_state,
-            initializer_func=IllAutomate.initializer
+            initializer_func=IllAutomaton.initializer
         )
 
     def initializer(grid, memory_grid):
@@ -156,7 +156,7 @@ class IllAutomate(StochasticCellularAutomatonOpenCLMemory):
 
 
 if __name__ == "__main__":
-    automaton = IllAutomate(
+    automaton = IllAutomaton(
         initial_state=CellularAutomaton.load_image(
             "R:\\Labs\\FC-Lab1\\TIF\\initial_desired.bmp", num_states=4
         ),

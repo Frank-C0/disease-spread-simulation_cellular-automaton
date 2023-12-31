@@ -1,11 +1,11 @@
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_f
-from disease_spread_cellular_automaton import IllAutomate
+from disease_spread_cellular_automaton import IllAutomaton
 from cellular_automaton_interface import CellularAutomaton
 from example_3_states_cellular_automaton import GameOfLifeAutomatonOpenCL
 import numpy as np
 
-class CellularAutomatePygame:
+class CellularAutomatePygameGUI:
     def __init__(self, automaton, initial_screen_size, colors=None):
         self.automaton = automaton
         self.size = automaton.SIZE
@@ -68,15 +68,3 @@ class CellularAutomatePygame:
             self.clock.tick(5)  # Ajusta la tasa de frames según sea necesario
 
         pygame.quit()
-
-if __name__ == "__main__":
-    game_of_life_automaton = IllAutomate(
-        initial_state=CellularAutomaton.load_image(
-            "R:\\Labs\\FC-Lab1\\TIF\\initial_desired_centra.bmp", num_states=4
-        ),
-        R0=2.4,
-        ILL_DURATION=16
-    )
-    
-    game_pygame = CellularAutomatePygame(automaton=game_of_life_automaton, initial_screen_size=600)
-    game_pygame.run()
