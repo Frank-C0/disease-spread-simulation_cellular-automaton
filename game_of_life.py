@@ -6,12 +6,20 @@ import imageio
 from PIL import Image
 import os
 
+class CellularAutomaton:
+    def __init__(self, size, initial_state = None):
+        self.SIZE = size
+        if initial_state is None:
+            self.grid = initial_state = np.random.choice((False, True), (self.SIZE, self.SIZE)).astype(np.int32)
+    def update():
+        raise NotImplementedError()
 
-class PythonRuleAutomaton:
+class CellularAutomatonPython(CellularAutomaton):
     def __init__(self, size, rule):
         self.SIZE = size
         self.rule = rule
         self.grid = np.random.choice((False, True), (self.SIZE, self.SIZE)).astype(np.int32)
+        super().__init__(size)
 
     def update(self):
         new_grid = np.zeros_like(self.grid)
@@ -23,10 +31,10 @@ class PythonRuleAutomaton:
         self.grid = new_grid
         return self.grid
 
-
-class CellularAutomatonOpenCL:
+class CellularAutomatonOpenCL(CellularAutomaton):
     def __init__(self, size, rule_kernel, initial_state=None):
-        self.SIZE = size
+        super().__init__(size, initial_state)
+
         self.platform = cl.get_platforms()[0]
         self.device = self.platform.get_devices()[0]
         self.ctx = cl.Context([self.device])
@@ -36,15 +44,10 @@ class CellularAutomatonOpenCL:
 
         self.prg = cl.Program(self.ctx, self.kernel_code).build()
 
-        if initial_state is None:
-            initial_state = np.random.choice(
-                (False, True), (self.SIZE, self.SIZE)
-            ).astype(np.int32)
-
         self.GRID1 = cl.Buffer(
             self.ctx,
             cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
-            hostbuf=initial_state,
+            hostbuf=self.grid,
         )
         self.GRID2 = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE, size=self.GRID1.size)
 
@@ -57,14 +60,12 @@ class CellularAutomatonOpenCL:
         if self.ACTIVE_GRID == 1:
             self.prg.gol(self.queue, (self.SIZE, self.SIZE), None, self.GRID1, self.GRID2, np.uint32(self.SIZE))
             self.ACTIVE_GRID = 2
-            img_data = np.empty((self.SIZE, self.SIZE), dtype=np.int32)
-            cl.enqueue_copy(self.queue, img_data, self.GRID1)
+            cl.enqueue_copy(self.queue, self.grid, self.GRID1)
         else:
             self.prg.gol(self.queue, (self.SIZE, self.SIZE), None, self.GRID2, self.GRID1, np.uint32(self.SIZE))
             self.ACTIVE_GRID = 1
             img_data = np.empty((self.SIZE, self.SIZE), dtype=np.int32)
-            cl.enqueue_copy(self.queue, img_data, self.GRID2)
-
+            cl.enqueue_copy(self.queue, self.grid, self.GRID2)
         self.queue.finish()
 
         print(f"\tcomputed in {(time.time() - t_start) * 1000:.2f}ms ({(1/ (time.time() - t_start)):.2f} fps)", flush=False)
@@ -73,7 +74,7 @@ class CellularAutomatonOpenCL:
         # img = Image.fromarray(img_data.astype('uint8') * 255)
         # img = img.convert('L')
 
-        return img_data
+        # return img_data
 
 
 class GifSaver:
@@ -124,8 +125,8 @@ class CellularAutomatonGif:
 
     def generate_frames(self):
         for frame in range(self.max_frames):
-            data = self.automaton.update()
-            img = Image.fromarray(data.astype("uint8") * 255)
+            self.automaton.update()
+            img = Image.fromarray(self.automaton.grid.astype("uint8") * 255)
             img = img.convert("L")
             self.gif_saver.frames.append(np.array(img))
 
@@ -166,7 +167,7 @@ game_of_life_kernel = """
 """
 
 
-class GameOfLifeAutomaton(PythonRuleAutomaton):
+class GameOfLifeAutomaton(CellularAutomatonPython):
     def __init__(self, size):
         super().__init__(size, rule=self.game_of_life_rule)
 
@@ -190,8 +191,8 @@ class GameOfLifeAutomaton(PythonRuleAutomaton):
 
 
 if __name__ == "__main__":
-    # game_of_life = CellularAutomatonOpenCL(size=100, rule_kernel=game_of_life_kernel)
-    game_of_life = GameOfLifeAutomaton(100)
+    game_of_life = CellularAutomatonOpenCL(size=100, rule_kernel=game_of_life_kernel)
+    # game_of_life = GameOfLifeAutomaton(100)
     game = CellularAutomatonGif(
         max_frames=100,
         save_interval=10,
