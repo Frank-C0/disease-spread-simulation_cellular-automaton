@@ -1,50 +1,35 @@
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE, K_f
-from game_of_life_example import GameOfLifeAutomatonOpenCL, GameOfLifeAutomatonPython
+from cellular_automaton_interface import CellularAutomaton
+from game_of_life_example import GameOfLifeAutomatonOpenCL
 import numpy as np
 
 class CellularAutomatePygame:
-    def __init__(self, automaton, initial_screen_size):
+    def __init__(self, automaton, initial_screen_size, colors=None):
         self.automaton = automaton
         self.size = automaton.SIZE
         self.screen_size = initial_screen_size
         self.cell_size = self.screen_size // self.size
+        self.colors = colors or [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0), (255, 0, 255), (0, 255, 255)]
+        
+        pygame.init()
         self.screen = pygame.display.set_mode((self.screen_size, self.screen_size), pygame.RESIZABLE)
         pygame.display.set_caption('Cellular Automaton')
-
-        self.fullscreen = False
-        self.cell_changed = np.zeros((self.size, self.size), dtype=bool)
-        self.color_surfaces = [pygame.Surface((self.cell_size, self.cell_size)) for _ in range(automaton.NUM_STATES)]
-        self.set_color_surfaces()
+        self.clock = pygame.time.Clock()
         
-        self.offset_x = 0
-        self.offset_y = 0
+        self.fullscreen = False
+        
 
-    def set_color_surfaces(self):
-        # Asignar colores a las superficies según el número de estados
-        colors = [(255, 255, 255), (255, 0, 0), (0, 255, 0), (0, 0, 255)]  # Puedes personalizar los colores
-        for i, surface in enumerate(self.color_surfaces):
-            surface.fill(colors[i])
 
     def draw_grid(self, data):
-        self.screen.fill((255, 255, 255))  # Llenar la pantalla con blanco
+        self.screen.fill((255, 255, 255)) 
 
-        cell_size_x = max(1, self.screen_size // self.size)
-        cell_size_y = max(1, self.screen_size // self.size)
+        color_matrix = np.array([self.colors[state] for state in data.flat], dtype=np.uint8).reshape(data.shape + (3,))
+        scaled_color_matrix = pygame.surfarray.make_surface(np.transpose(color_matrix, axes=(1, 0, 2)))
+        scaled_color_matrix = pygame.transform.scale(scaled_color_matrix, (self.screen_size, self.screen_size))
 
-        for y in range(self.size):
-            for x in range(self.size):
-                pixel_x = (x * cell_size_x) - int(self.offset_x * cell_size_x)
-                pixel_y = (y * cell_size_y) - int(self.offset_y * cell_size_y)
-
-                if 0 <= pixel_x < self.screen_size and 0 <= pixel_y < self.screen_size:
-                    state = data[y, x]
-                    surface = self.color_surfaces[state]
-                    scaled_surface = pygame.transform.scale(surface, (cell_size_x, cell_size_y))
-                    rect = scaled_surface.get_rect(topleft=(pixel_x, pixel_y))
-                    self.screen.blit(scaled_surface, rect.topleft)
-
-        self.cell_changed[:] = False
+        self.screen.blit(scaled_color_matrix, scaled_color_matrix.get_rect())
+        pygame.display.flip()
 
     def toggle_fullscreen(self):
         self.fullscreen = not self.fullscreen
@@ -55,7 +40,6 @@ class CellularAutomatePygame:
 
     def run(self):
         running = True
-        clock = pygame.time.Clock()
 
         while running:
             for event in pygame.event.get():
@@ -72,18 +56,15 @@ class CellularAutomatePygame:
                     self.screen = pygame.display.set_mode((self.screen_size, self.screen_size), pygame.RESIZABLE)
 
             self.automaton.update()
-
             self.draw_grid(self.automaton.grid)
-
-            pygame.display.flip()
-
-            clock.tick(10)  # Ajusta la tasa de frames según sea necesario
+            self.clock.tick(5)  # Ajusta la tasa de frames según sea necesario
 
         pygame.quit()
 
 if __name__ == "__main__":
-    # Choose either GameOfLifeAutomatonPython or GameOfLifeAutomatonOpenCL
-    game_of_life_automaton = GameOfLifeAutomatonOpenCL(size=200, num_states=3)
+    game_of_life_automaton = GameOfLifeAutomatonOpenCL(
+        initial_state=CellularAutomaton.load_image("R:\\Labs\\FC-Lab1\\TIF\\input_3states.bmp", num_states=3),
+    )
     
     game_pygame = CellularAutomatePygame(automaton=game_of_life_automaton, initial_screen_size=600)
     game_pygame.run()

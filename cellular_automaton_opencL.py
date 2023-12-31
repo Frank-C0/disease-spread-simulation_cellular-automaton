@@ -7,6 +7,7 @@ import time
 class CellularAutomatonOpenCL(CellularAutomaton):
     def __init__(self, size=100, num_states=2, rule_kernel=None, initial_state=None):
         super().__init__(size, num_states, initial_state)
+        print(self.SIZE)
 
         self.platform = cl.get_platforms()[0]
         self.device = self.platform.get_devices()[0]
@@ -21,12 +22,17 @@ class CellularAutomatonOpenCL(CellularAutomaton):
             self.ctx,
             cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=self.grid,
+            
         )
         self.GRID2 = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE, size=self.GRID1.size)
 
         self.ACTIVE_GRID = 1
 
+        print(self.GRID1.size)
+        print(self.GRID2.size)
+
     def update(self):
+        
         if self.ACTIVE_GRID == 1:
             self.prg.gol(
                 self.queue,
@@ -52,4 +58,7 @@ class CellularAutomatonOpenCL(CellularAutomaton):
             self.ACTIVE_GRID = 1
             cl.enqueue_copy(self.queue, self.grid, self.GRID2)
         self.queue.finish()
+        # unique_categories = np.unique(self.grid)
+        # print("Categorías presentes en la cuadrícula:", unique_categories)
+        # print(self.grid)
         # print(f"\tcomputed in {(time.time() - t_start) * 1000:.2f}ms ({(1/ (time.time() - t_start)):.2f} fps)", flush=False,)

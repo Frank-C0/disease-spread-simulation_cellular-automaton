@@ -23,19 +23,24 @@ class GameOfLifeAutomatonOpenCL(CellularAutomatonOpenCL):
 
             if (grid[y * n + x] > 0) {
                 // Any live cell with two or three live neighbors survives.
-                out_grid[y * n + x] = (total == 2 || total == 3) ? grid[y * n + x] : 0;
+                // For 3 states, a live cell with 2 or 3 neighbors retains its state.
+                out_grid[y * n + x] = (total == 2 || total == 3) ? 1 : 0;
             } else {
                 // Any dead cell with three live neighbors becomes a live cell.
+                // For 3 states, a dead cell with 3 neighbors transitions to state 1.
                 out_grid[y * n + x] = (total == 3) ? 1 : 0;
             }
         }
     """
 
-    def __init__(self, size=100, num_states=2, initial_state=None):
+    def __init__(self, size=100, initial_state=None):
         super().__init__(
-            size, num_states, rule_kernel=GameOfLifeAutomatonOpenCL.game_of_life_kernel, initial_state=initial_state
+            size,
+            3,
+            rule_kernel=GameOfLifeAutomatonOpenCL.game_of_life_kernel,
+            initial_state=initial_state,
         )
-    
+
 
 class GameOfLifeAutomatonPython(CellularAutomatonPython):
     def __init__(self, size=100, num_states=2, initial_state=None):
@@ -57,18 +62,9 @@ class GameOfLifeAutomatonPython(CellularAutomatonPython):
         )
 
         if self.grid[x, y] > 0:
-            return (
-                self.grid[x, y]
-                if total == 2 or total == 3
-                else 0
-            )
+            return self.grid[x, y] % n if total == 2 or total == 3 else 0
         else:
-            return (
-                self.grid[x, y]
-                if total == 3
-                else 0
-            )
-
+            return self.grid[x, y] % n if total == 3 else 0
 
 
 if __name__ == "__main__":
@@ -83,14 +79,26 @@ if __name__ == "__main__":
     # game.generate_frames()
     # game.combine_gifs()
 
-    # game_of_life = GameOfLifeAutomatonOpenCL(size=100)
-    game_of_life = GameOfLifeAutomatonOpenCL(num_states=2, initial_state=CellularAutomaton.load_image("R:\\Labs\\FC-Lab1\\TIF\\input.bmp"))
+    # game_of_life = GameOfLifeAutomatonOpenCL(size=500)
+    # game_of_life = GameOfLifeAutomatonPython(
+    game_of_life = GameOfLifeAutomatonOpenCL(
+        initial_state=CellularAutomaton.load_image(
+            "R:\\Labs\\FC-Lab1\\TIF\\input_3states.bmp", num_states=3
+        ),
+    )
     gif_generator = CellularAutomatonGif(
         max_frames=100,
         save_interval=10,
         output_folder="output_gifs/",
         automaton=game_of_life,
-        filename_gif="opencl_gif.gif"
+        filename_gif="opencl_gif.gif",
+        frame_rate=10.0,
+        num_states=3,
+        colors=[
+            (0,255,0),
+            (0,0,255),
+            (255,0,0)
+        ]
     )
     gif_generator.generate_frames()
     gif_generator.combine_gifs()
